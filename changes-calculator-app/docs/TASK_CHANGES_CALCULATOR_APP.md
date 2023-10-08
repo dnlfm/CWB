@@ -56,7 +56,7 @@ In various retail and sales environments, it's essential to quickly and accurate
     - **Amount of purchase**: €34.15
     - **Amount given by the customer**: €50.00
     - **Output**: €10 x 1, €5 x 1, €0.50 x 1, €0.20 x 1, €0.10 x 1, €0.05 x 1
-    - **Explanation**: The change due is €15.85. The optimal breakdown would be one €10 note, one €5 note, one €0.50 coin, two €0.20 coins, one €0.10 coin, and one €0.05 coin.
+    - **Explanation**: The change due is €15.85. The optimal breakdown would be one €10 note, one €5 note, one €0.50 coin, one €0.20 coin, one €0.10 coin, and one €0.05 coin.
 
 3. 
     - **Amount of purchase**: €89.03
@@ -68,7 +68,7 @@ In various retail and sales environments, it's essential to quickly and accurate
     - **Amount of purchase**: €120.78
     - **Amount given by the customer**: €150.00
     - **Output**: €20 x 1, €5 x 1, €2 x 2, €0.20 x 1, €0.02 x 1
-    - **Explanation**: The change due is €29.22. The optimal breakdown would be one €20 note, one €5 note, two €0.10 coins, and one €0.02 coin.
+    - **Explanation**: The change due is €29.22. The optimal breakdown would be one €20 note, one €5 note, two €2 coins, one €0.20 coin, and one €0.02 coin.
 
 ## Deliverables:
 - Source code of the fully functional app.
