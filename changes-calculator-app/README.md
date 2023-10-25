@@ -286,6 +286,106 @@ Running `npm start` (_and in my case selecting to open Android_), you can see th
 <img src="./docs/assets/app_first_version.png" alt="First version of the App" height="500"/>
 <img src="./docs/assets/app_first_version_working_example.png" alt="First version of the App is Working! Entered 52.39 for the purchase amount and 60 for the amount given by the customer. The result is: €5x1, €2x1, €0.50x1, €0.10x1, €0.01x1" height="500"/>
 
+Now, try to improve the output, add new features, more currencies, ... it is up to you! :)
+
+### Adding a Splash Screen to Welcome users - Dealing with Life Cycles of an App
+
+It is common to show the so called "Splash Screen" when an app is initializing. Normally, you would be starting necessary services in the background, and when they are finished, you would show the main screen of your app.
+
+In our case, let's just explore the Life Cyles:
+- We would like to show the "Welcome \o/" message when the App starts for the `first time`;
+- We would like to show the "Resuming" message when the App is `resumed` - this happens if the user changes to another app, then our app goes to "stand by" mode. When the user selects our app again, it is resumed.
+
+Since `App.tsx` is the main module of our app, let's modify it to be:
+
+```ts
+import React, { useEffect, useState } from 'react';
+import { AppState, StyleSheet, Text, View } from 'react-native';
+import { ChangeCalculator } from './src/ChangeCalculator';
+
+export default function App() {
+  const [isSplashVisible, setSplashVisibility] = useState(true);
+  const [appState, setAppState] = useState(AppState.currentState);
+
+  const handleAppStateChange = (nextAppState: "active" | "background" | "inactive" | "unknown" | "extension") => {
+    if (
+      appState.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      setSplashVisibility(true);
+      setTimeout(() => {
+        setSplashVisibility(false);
+      }, 2000);
+    }
+    setAppState(nextAppState);
+  };
+
+
+  useEffect(() => {
+    // This will deactivate ou Splash Screen after 2 seconds
+    const timer = setTimeout(() => {
+      setSplashVisibility(false);
+    }, 2000);
+
+    // This line sets up an event listener to listen for changes in the app's state. When the app's state changes (e.g., it 
+    // goes to the background or comes back to the foreground), the handleAppStateChange function will be called.
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
+
+    // Cleanup function of the useEffect hook:
+    // Clean up any side effects to avoid memory leaks or unwanted behavior. Here, the timer is cleared (to ensure 
+    // it doesn't run if it hasn't already) and the app state event listener is removed (to stop listening for 
+    // app state changes).
+    return () => {
+      clearTimeout(timer);
+      appStateSubscription.remove();
+    };
+  }, [appState]); // Our dependency array: Whenever appState changes, the effect will re-run, and before it does, it will run  the cleanup function.
+
+  return (
+    <View style={styles.container}>
+      {isSplashVisible ? (
+        <View style={styles.splashScreen}>
+          <Text style={styles.splashText}>Welcome \o/</Text>
+        </View>
+      ) : (
+        <ChangeCalculator />
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  splashScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  splashText: {
+    fontSize: 30,
+    color: 'deepskyblue',
+  },
+});
+```
+
+The code above keeps track of two variables `isSplashVisible` and `appState`. The first one controls the visibility of our Splash Screen and starts with value _true_, and the second one keeps track of the current state of our app. In order to keep track of the current state of our App, we need to add a `listener`. But where to add this listener? The answer is to use `useEffect`.
+
+The [useEffect hook](https://react.dev/reference/react/useEffect#useeffect) is a part of React's Hooks API. It lets you perform side effects in functional components. The useEffect hook receives two arguments:
+
+1. A function where you place the code to run.
+2. A dependency array.
+
+The code inside the function will run after the component renders, and it will re-run every time a value in the dependency array changes. If you don't provide a dependency array, the code will run after every render. If you provide an empty dependency array ([]), the code will run once after the initial render. 
+
+Some additional comments were added to the code snippet above so you can understand what is going on in our `useEffect` code. In short, it will be responsible of keeping track and updating our `appState`, and depending the state our app is, it will change `isSplashVisible` accordingly.
+
+Now, if you open the app, you should be able to see the welcome message when opening the App for the first time or resuming it. However, this will always display only the "Welcome \o/" message. Try to modify this code so you can display a different message when it is resuming. Also, try to add some image, gif or video to it, instead of a simple plain message. It is up to you! :)
 
 ### Miscellaneous 
 
