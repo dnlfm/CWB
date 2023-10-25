@@ -92,6 +92,224 @@ Feel free to do changes and try to implement the app by yourself looking at the 
 
 ### Giving some shape to our App
 
+Let's start by changing what we are going to show. First, do this small change to our `App.tsx`, keeping the previous imports and the style defined there:
+
+```ts
+// other imports
+import { ChangeCalculator } from './src/ChangeCalculator';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <ChangeCalculator />
+    </View>
+  );
+}
+// ...
+```
+
+This code won't run because we didn't create the `ChangeCalculator` component yet. We are going to create it into a folder called `src` (short for _source_), where we are going to have the logic for our app. You can see that now, instead of displaying a message, the `View` will have inside just a call to `ChangeCalculator` component.
+
+#### ChangeCalculator.tsx
+
+Create a folder called `src` and a file named `ChangeCalculator.tsx`. Assuming you have your terminal at the root of your new project:
+
+```bash
+mkdir src && touch src/ChangeCalculator.tsx
+```
+
+Add its content:
+
+```ts
+import React, { useState } from 'react';
+import { StyleSheet, Text, TextInput, Button } from 'react-native';
+import { Breakdown } from './Breakdown';
+import { EURO_DENOMINATIONS } from './Denomination'
+
+const breakdownCalculator = new Breakdown(EURO_DENOMINATIONS);
+
+export function ChangeCalculator() {
+  const [purchaseAmount, setPurchaseAmount] = useState<string>('');
+  const [amountGiven, setAmountGiven] = useState<string>('');
+  const [changeResult, setChangeResult] = useState<string>('Change will be shown here.');
+
+  const handleCalculateChange = () => {
+    const purchase = parseFloat(purchaseAmount);
+    const given = parseFloat(amountGiven);
+    if (!isNaN(purchase) && !isNaN(given)) {
+      const change = given - purchase;
+      const breakdownDescription = breakdownCalculator.describeBreakdown(change);
+      setChangeResult(breakdownDescription);
+    } else {
+      setChangeResult("Please enter valid amounts.");
+    }
+  };
+
+  return (
+    <>
+      <Text style={styles.title}>Changes Calculator App</Text>
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        placeholder="Enter purchase amount (€)"
+        value={purchaseAmount}
+        onChangeText={setPurchaseAmount}
+      />
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        placeholder="Enter amount given by the customer (€)"
+        value={amountGiven}
+        onChangeText={setAmountGiven}
+      />
+      <Button title="Calculate Change" onPress={handleCalculateChange}/>
+      <Text style={styles.result}>{changeResult}</Text>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#f2f2f2',
+      alignItems: 'center',
+      paddingTop: 50,
+    },
+    title: {
+      fontSize: 24,
+      marginBottom: 40,
+      fontWeight: 'bold',
+    },
+    input: {
+      width: '80%',
+      padding: 10,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      backgroundColor: '#fff',
+    },
+    result: {
+      marginTop: 40,
+      fontSize: 18,
+    },
+  });
+```
+
+The main goal of this component is to define two input fields, a button to calculate and a text field to show the results.
+
+We are using `useState` to control the values of our variables. When calling this function, it also gives us a `set` method for the variable we want to keep track. In this code, we are keeping track of `purchaseAmount`, `amountGiven` and `changeResult`. The first two are updated from the values in the input text fields, and the latest is updated when the "Calculate Change" button is pressed.
+
+We can see from the code some modules are still missing, let's create them!
+
+#### Denomination.tsx
+
+This file will define the available denominations. For now, we will define only EUR currency:
+
+```bash
+touch src/Denomination.tsx
+```
+
+And its content:
+
+```ts
+export type Denomination = {
+    name: string;
+    value: number;
+};
+
+export const EURO_DENOMINATIONS: Denomination[] = [
+    { name: '€500', value: 500 },
+    { name: '€200', value: 200 },
+    { name: '€100', value: 100 },
+    { name: '€50', value: 50 },
+    { name: '€20', value: 20 },
+    { name: '€10', value: 10 },
+    { name: '€5', value: 5 },
+    { name: '€2', value: 2 },
+    { name: '€1', value: 1 },
+    { name: '€0.50', value: 0.50 },
+    { name: '€0.20', value: 0.20 },
+    { name: '€0.10', value: 0.10 },
+    { name: '€0.05', value: 0.05 },
+    { name: '€0.02', value: 0.02 },
+    { name: '€0.01', value: 0.01 }
+];
+```
+
+The code above defines the `Denomination` type and the `EURO_DENOMINATIONS` that we will use to calculate the breakdown.
+
+#### Breakdown.tsx
+
+Let's define the Breakdown class that will contain the method to perform the breakdown.
+
+```bash
+touch src/Breakdown.tsx
+```
+
+And its content:
+
+```ts
+import { Denomination } from './Denomination';
+
+export class Breakdown {
+  private denominations: Denomination[];
+
+  constructor(denominations: Denomination[]) {
+    this.denominations = denominations.sort((a, b) => b.value - a.value); // ensure it's sorted in descending order
+  }
+
+  public describeBreakdown(changeAmount: number): string {
+    let remaining = changeAmount;
+    const breakdown: string[] = [];
+    for (const denomination of this.denominations) {
+      const count = Math.floor(remaining / denomination.value);
+      if (count > 0) {
+        breakdown.push(`${denomination.name} x ${count}`);
+        remaining = Number((remaining - count * denomination.value).toFixed(2));
+      }
+      if (remaining == 0) {
+        break;
+      }
+    }
+    return breakdown.join(', ');
+  }
+}
+```
+
+Why did we define a class for this? In short, it is really not needed. However, if you pay attention, it ensures to sort all denominations, in descending order, when it is instantiated. So, when calling `describeBreakdown`, we can be sure that this will perform trying all the higher denominations first, giving the best combination for the change.
+
+### Running the first version of our App
+
+Running `npm start` (_and in my case selecting to open Android_), you can see that it is working!
+
+<img src="./docs/assets/app_first_version.png" alt="First version of the App" height="500"/>
+<img src="./docs/assets/app_first_version_working_example.png" alt="First version of the App is Working! Entered 52.39 for the purchase amount and 60 for the amount given by the customer. The result is: €5x1, €2x1, €0.50x1, €0.10x1, €0.01x1" height="500"/>
+
+
+### Miscellaneous 
+
+#### Functional programming to define components
+
+You saw how to defined components declaring them as functions:
+
+```ts
+function ChangeCalculator() {
+  // code here
+}
+```
+
+You can use write in a functional programming style instead, that is equivalent:
+
+```ts
+const ChangeCalculator: React.FC = () => {
+  // code here
+}
+```
+
+The functional programming style is preferred among React developers. <br>
+
+
 ![Under construction](./docs/assets/under_construction.jpg "Under construction")
 
 Copyright © 2023 Daniel Freitas Martins (dnlfm)
