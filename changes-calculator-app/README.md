@@ -409,7 +409,8 @@ const ChangeCalculator: React.FC = () => {
 
 The functional programming style is preferred among React developers. <br>
 
+Now, feel free to implement new features by yourself!
 
-![Under construction](./docs/assets/under_construction.jpg "Under construction")
+<!-- ![Under construction](./docs/assets/under_construction.jpg "Under construction") -->
 
 Copyright © 2023 Daniel Freitas Martins (dnlfm)
