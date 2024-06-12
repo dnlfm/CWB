@@ -1,6 +1,8 @@
 # Changes Calculator App
 
-![Changing Cash](./docs/assets/changing_cash.jpg "Changing Cash")
+<p align="center">
+  <img src="./docs/assets/changing_cash_v2.webp" alt="Changing Cash" width="250" />
+</p>
 
 The goal of this project is to create a changes calculator app, that will be able to run on the Web, Android and iOS devices.<br>
 To achieve this, we will use [React-Native](./docs/ABOUT_REACT_NATIVE.md) and Typescript.
